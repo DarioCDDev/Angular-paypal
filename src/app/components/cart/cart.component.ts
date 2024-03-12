@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MessageService } from '../../services/message.service';
 import { Product } from '../../models/product';
 import { CartItem } from '../../models/cart-item';
+import { StorageService } from '../../services/storage.service';
 
 @Component({
   selector: 'app-cart',
@@ -12,9 +13,12 @@ export class CartComponent implements OnInit {
   cartItems: any = [];
   total: number = 0;
 
-  constructor(private messageSerivice: MessageService) {}
+  constructor(private messageSerivice: MessageService, private storageService: StorageService) {}
 
   ngOnInit(): void {
+    if (this.storageService.existsCart()) {
+      this.cartItems = this.storageService.getCart();
+    }
     this.getItems();
     this.total = this.getTotal();
   }
@@ -33,6 +37,7 @@ export class CartComponent implements OnInit {
         this.cartItems.push(cartItem);
       }
       this.total = this.getTotal();
+      this.storageService.setCart(this.cartItems);
     });
   }
 
@@ -47,6 +52,7 @@ export class CartComponent implements OnInit {
   emptyCart(): void {
     this.cartItems = [];
     this.total = 0;
+    this.storageService.clearCart();
   }
   delteItem(index: number): void {
     if (this.cartItems[index].quantity > 1) {
@@ -55,5 +61,6 @@ export class CartComponent implements OnInit {
       this.cartItems.splice(index, 1);
     }
     this.total = this.getTotal();
+    this.storageService.setCart(this.cartItems);
   }
 }
