@@ -24,9 +24,10 @@
     <div class="alert alert-warning text center">
       <strong>Total:</strong> {{total}} €
     </div>
-    <button class="btn btn-outline-danger btn-block" (click)="emptyCart()">
+    <button class="btn btn-outline-danger btn-block mb-3" (click)="emptyCart()">
       <i class="fas fa-trash"></i>
       Clear Cart
     </button>
+    <ngx-paypal [config]="payPalConfig"></ngx-paypal>
   </div>
 </div>
