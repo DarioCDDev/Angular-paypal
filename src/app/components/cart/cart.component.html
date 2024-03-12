@@ -1,7 +1,20 @@
+<div class="alert alert-info text center">
+    <h4>Your Cart</h4>
+</div>
 <div class="text-center">
-    <ul class="list-group">
-        <li class="list-group-item" *ngFor="let item of [0,1,2,3,4,5]">
-            <app-cart-item/>
-        </li>
-      </ul>
+  <ul class="list-group">
+    <li class="list-group-item" *ngFor="let item of [0, 1, 2, 3, 4, 5]">
+     <div class="row">
+        <div class="col-md-10">
+            <app-cart-item />
+          </div>
+          <div class="col-md-2">
+            <i class="far fa-trash-alt fa-2x"></i>
+          </div>
+     </div>
+    </li>
+  </ul>
+  <div class="alert alert-warning text center">
+    <strong>Total:</strong> 100€
+</div>
 </div>
