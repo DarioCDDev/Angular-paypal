@@ -5,6 +5,9 @@ import { CartItem } from '../../models/cart-item';
 import { StorageService } from '../../services/storage.service';
 import { ICreateOrderRequest, IPayPalConfig } from 'ngx-paypal';
 import { environment } from '../../../environments/environment';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModalComponent } from '../modal/modal.component';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-cart',
@@ -18,7 +21,9 @@ export class CartComponent implements OnInit {
 
   constructor(
     private messageSerivice: MessageService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private modalService: NgbModal,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -28,6 +33,23 @@ export class CartComponent implements OnInit {
     }
     this.getItems();
     this.total = this.getTotal();
+  }
+
+  getItemsList(): any[] {
+    const items :any[] = [];
+    let item = {};
+    this.cartItems.forEach((cartItem: CartItem) => {
+      item = {
+        name: cartItem.productName,
+        quantity: cartItem.quantity,
+        unit_amount: {
+          currency_code: 'EUR',
+          value: cartItem.productPrice,
+        },
+      };
+      items.push(item);
+    });
+    return items;
   }
 
   private initConfig(): void {
@@ -41,34 +63,15 @@ export class CartComponent implements OnInit {
             {
               amount: {
                 currency_code: 'EUR',
-                value: '9.99',
+                value: this.getTotal().toString(),
                 breakdown: {
                   item_total: {
                     currency_code: 'EUR',
-                    value: '9.99',
+                    value: this.getTotal().toString(),
                   },
                 },
               },
-              items: [
-                {
-                  name: 'Enterprise Subscription',
-                  quantity: '1',
-                  category: 'DIGITAL_GOODS',
-                  unit_amount: {
-                    currency_code: 'EUR',
-                    value: '9.99',
-                  },
-                },
-                {
-                  name: 'Enterprise Subscription',
-                  quantity: '1',
-                  category: 'DIGITAL_GOODS',
-                  unit_amount: {
-                    currency_code: 'EUR',
-                    value: '9.99',
-                  },
-                },
-              ],
+              items: this.getItemsList(),
             },
           ],
         },
@@ -79,7 +82,7 @@ export class CartComponent implements OnInit {
         label: 'paypal',
         layout: 'vertical',
       },
-      onApprove: (data, actions) => {
+      onApprove: (data, actions) => {this.spinner.show();
         console.log(
           'onApprove - transaction was approved, but not authorized',
           data,
@@ -97,6 +100,9 @@ export class CartComponent implements OnInit {
           'onClientAuthorization - you should probably inform your server about completed transaction at this point',
           data
         );
+        this.openModal(data.purchase_units[0].items, data.purchase_units[0].amount.value);
+        this.emptyCart();
+        this.spinner.hide();
       },
       onCancel: (data, actions) => {
         console.log('OnCancel', data, actions);
@@ -149,5 +155,11 @@ export class CartComponent implements OnInit {
     }
     this.total = this.getTotal();
     this.storageService.setCart(this.cartItems);
+  }
+
+  openModal(items: any, amount: any): void {
+    const modalRef = this.modalService.open(ModalComponent);
+    modalRef.componentInstance.items = items;
+    modalRef.componentInstance.amount = amount
   }
 }
